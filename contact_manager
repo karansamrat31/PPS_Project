@@ -2,3 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
+typedef struct Contact_details {
+    char *name;
+    char **phones;
+    int phoneCount;
+    char **emails;
+    int emailCount;
+    char *address;
+} Contact;
+
+typedef struct list_Contacts {
+    Contact *list;
+    int count;
+} C_list;
+
+// ---------------- Utility Functions ----------------
+void initList(C_list *cl) {
+    cl->list = NULL;
+    cl->count = 0;
+}
