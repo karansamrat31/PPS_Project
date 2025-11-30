@@ -69,3 +69,136 @@ void mergeContacts(Contact *a, Contact *b) {
         }
     }
 }
+
+// Deletes a contact by its index
+void deleteContact(C_list *cl, int index) {
+    if(index < 0 || index >= cl->count) {
+        printf("❌ Invalid index!\n");
+        return;
+    }
+
+    // Free memory for that contact
+    free(cl->list[index].name);
+    free(cl->list[index].address);
+    for(int j = 0; j < cl->list[index].phoneCount; j++) free(cl->list[index].phones[j]);
+    free(cl->list[index].phones);
+    for(int j = 0; j < cl->list[index].emailCount; j++) free(cl->list[index].emails[j]);
+    free(cl->list[index].emails);
+
+    // Shift remaining contacts
+    for(int i = index; i < cl->count - 1; i++) {
+        cl->list[i] = cl->list[i + 1];
+    }
+
+    cl->count--;
+    cl->list = realloc(cl->list, cl->count * sizeof(Contact));
+    printf("🗑 Contact deleted successfully!\n");
+}
+
+// ---------------- Contact Management ----------------
+
+void addContact(C_list *cl) {
+    Contact newContact;
+
+    newContact.name = malloc(100);
+    printf("Enter Name: ");
+    scanf(" %99[^\n]", newContact.name);
+
+    printf("How many phone numbers? ");
+    scanf("%d", &newContact.phoneCount);
+    newContact.phones = malloc(newContact.phoneCount * sizeof(char *));
+    for(int i = 0; i < newContact.phoneCount; i++) {
+        newContact.phones[i] = malloc(20);
+        printf("Enter Phone %d: ", i+1);
+        scanf(" %19s", newContact.phones[i]);
+    }
+
+    printf("How many emails? ");
+    scanf("%d", &newContact.emailCount);
+    newContact.emails = malloc(newContact.emailCount * sizeof(char *));
+    for(int i = 0; i < newContact.emailCount; i++) {
+        newContact.emails[i] = malloc(50);
+        printf("Enter Email %d: ", i+1);
+        scanf(" %49s", newContact.emails[i]);
+    }
+
+    newContact.address = malloc(200);
+    printf("Enter Address: ");
+    scanf(" %199[^\n]", newContact.address);
+
+    // Check and merge duplicates
+    for(int i = 0; i < cl->count; i++) {
+        if(isDuplicate(&cl->list[i], &newContact)) {
+            printf("⚠ Duplicate detected, merging contacts...\n");
+            mergeContacts(&cl->list[i], &newContact);
+            return;
+        }
+    }
+
+    // If no duplicate found, add new entry
+    cl->list = realloc(cl->list, (cl->count + 1) * sizeof(Contact));
+    cl->list[cl->count++] = newContact;
+
+    printf("✔ Contact Added Successfully!\n");
+}
+
+void printContacts(C_list *cl) {
+    if(cl->count == 0) { printf("📭 No contacts available.\n"); return; }
+    printf("\n📒 Contact List:\n");
+    for(int i = 0; i < cl->count; i++) {
+        printf("\n[%d] Name: %s\nAddress: %s\nPhones: ", i, cl->list[i].name, cl->list[i].address);
+        for(int j = 0; j < cl->list[i].phoneCount; j++) printf("%s ", cl->list[i].phones[j]);
+        printf("\nEmails: ");
+        for(int j = 0; j < cl->list[i].emailCount; j++) printf("%s ", cl->list[i].emails[j]);
+        printf("\n");
+    }
+}
+
+// ---------------- Memory Cleanup ----------------
+void freeMemory(C_list *cl) {
+    for(int i = 0; i < cl->count; i++) {
+        free(cl->list[i].name);
+        free(cl->list[i].address);
+        for(int j = 0; j < cl->list[i].phoneCount; j++) free(cl->list[i].phones[j]);
+        free(cl->list[i].phones);
+        for(int j = 0; j < cl->list[i].emailCount; j++) free(cl->list[i].emails[j]);
+        free(cl->list[i].emails);
+    }
+    free(cl->list);
+}
+
+// ---------------- Main Program ----------------
+int main() {
+    C_list cl;
+    initList(&cl);
+
+    int choice, delIndex;
+    while(1) {
+        printf("\n--- Contact Manager ---\n");
+        printf("1. Add Contact\n2. View Contacts\n3. Delete Contact\n4. Exit\nChoice: ");
+        scanf("%d", &choice);
+
+        if(choice == 1) addContact(&cl);
+        else if(choice == 2) printContacts(&cl);
+        else if(choice == 3) {
+            printContacts(&cl);
+            printf("Enter index of contact to delete: ");
+            scanf("%d", &delIndex);
+            deleteContact(&cl, delIndex);
+        }
+        else break;
+    }
+
+    freeMemory(&cl);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
