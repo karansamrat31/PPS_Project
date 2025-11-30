@@ -22,3 +22,50 @@ void initList(C_list *cl) {
     cl->list = NULL;
     cl->count = 0;
 }
+char *lower(const char *s) {
+    char *res = malloc(strlen(s) + 1);
+    for(int i = 0; s[i]; i++) res[i] = tolower(s[i]);
+    res[strlen(s)] = '\0';
+    return res;
+}
+int isDuplicate(Contact *a, Contact *b) {
+    char *n1 = lower(a->name), *n2 = lower(b->name);
+    int match = strcmp(n1, n2) == 0;
+    free(n1); free(n2);
+    if(match) return 1;
+
+    // Compare phone numbers
+    for(int i = 0; i < a->phoneCount; i++) {
+        char *p1 = stripNonDigits(a->phones[i]);
+        for(int j = 0; j < b->phoneCount; j++) {
+            char *p2 = stripNonDigits(b->phones[j]);
+            if(strcmp(p1, p2) == 0) { free(p1); free(p2); return 1; }
+            free(p1); free(p2);
+        }
+    }
+    return 0;
+}
+
+// ---------------- Merge and Delete ----------------
+
+void mergeContacts(Contact *a, Contact *b) {
+    for(int i = 0; i < b->phoneCount; i++) {
+        int exists = 0;
+        for(int j = 0; j < a->phoneCount; j++)
+            if(strcmp(a->phones[j], b->phones[i]) == 0) exists = 1;
+        if(!exists) {
+            a->phones = realloc(a->phones, (a->phoneCount + 1) * sizeof(char *));
+            a->phones[a->phoneCount++] = strdup(b->phones[i]);
+        }
+    }
+
+    for(int i = 0; i < b->emailCount; i++) {
+        int exists = 0;
+        for(int j = 0; j < a->emailCount; j++)
+            if(strcmp(a->emails[j], b->emails[i]) == 0) exists = 1;
+        if(!exists) {
+            a->emails = realloc(a->emails, (a->emailCount + 1) * sizeof(char *));
+            a->emails[a->emailCount++] = strdup(b->emails[i]);
+        }
+    }
+}
